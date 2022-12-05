@@ -55,7 +55,6 @@ module mycpu_core(
         .wb_to_rf_bus    (wb_to_rf_bus    ),
         .ex_to_rf_bus    (ex_to_rf_bus    ),
         .mem_to_rf_bus   (mem_to_rf_bus   ),
-
         .id_to_ex_bus    (id_to_ex_bus    ),
         .br_bus          (br_bus          )
     );
