@@ -40,6 +40,7 @@ module EX(
     wire [3:0] sel_alu_src2;
     wire data_ram_en;
     wire [3:0] data_ram_wen;
+    wire [3:0] data_ram_sel;
     wire rf_we;
     wire [4:0] rf_waddr;
     wire sel_rf_res;
@@ -47,6 +48,7 @@ module EX(
     reg is_in_delayslot;
 
     assign {
+        mem_op,
         ex_pc,          // 148:117
         inst,           // 116:85
         alu_op,         // 84:83
@@ -82,8 +84,16 @@ module EX(
         .alu_src2    (alu_src2    ),
         .alu_result  (alu_result  )
     );
-
     assign ex_result = alu_result;
+
+
+    wire inst_sw;
+
+    assign{inst_sw}=mem_op;
+    assign data_ram_sel=4'b1111;
+    assign data_ram_wen={4{data_ram_wen}}&data_ram_sel;
+    assign data_ram_addr=ex_result;
+    assign data_sram_wdata=rf_rdata2;
 
     assign ex_to_mem_bus = {
         ex_pc,          // 75:44

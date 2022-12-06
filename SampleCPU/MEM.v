@@ -32,14 +32,18 @@ module MEM(
     wire [31:0] mem_pc;
     wire data_ram_en;
     wire [3:0] data_ram_wen;
+    wire [3:0] data_ram_sel;
     wire sel_rf_res;
     wire rf_we;
     wire [4:0] rf_waddr;
     wire [31:0] rf_wdata;
     wire [31:0] ex_result;
     wire [31:0] mem_result;
+    wire mem_op;
 
     assign {
+        mem_op,
+        data_ram_sel,
         mem_pc,         // 75:44
         data_ram_en,    // 43
         data_ram_wen,   // 42:39
