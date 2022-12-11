@@ -140,7 +140,8 @@ module ID(
     assign offset = inst[15:0];
     assign sel = inst[2:0];
 
-    wire inst_ori, inst_lui, inst_addiu, inst_beq,inst_subu;
+    wire inst_ori, inst_lui, inst_addiu, inst_beq,inst_subu,inst_addu;
+    wire inst_sll,inst_or;
     wire inst_jal,inst_jr;
 
     wire op_add, op_sub, op_slt, op_sltu;
@@ -179,31 +180,34 @@ module ID(
 
     
     assign inst_ori     = op_d[6'b00_1101];
+    assign inst_or      = op_d[6'b00_0000]&sa_d[5'b0_0000]&func_d[6'b10_0101];
     assign inst_lui     = op_d[6'b00_1111];
     assign inst_addiu   = op_d[6'b00_1001];
+    assign inst_addu    = op_d[6'b00_0000]&sa_d[5'b0_0000]&func_d[6'b10_0001];
     assign inst_beq     = op_d[6'b00_0100];
     assign inst_subu    = op_d[6'b00_0000]&sa_d[5'b0_0000]&func_d[6'b10_0011];
     assign inst_jal     = op_d[6'b00_0011];
     assign inst_jr      = op_d[6'b00_0000]&rt_d[5'b0_0000]&rd_d[5'b0_0000]&sa_d[5'b0_0000]&func_d[6'b00_1000];
     assign inst_sw      = op_d[6'b10_1011];
+    assign inst_sll     = op_d[6'b00_0000]&rs_d[5'b0_0000]&func_d[6'b00_0000];
 
 
 
     // rs to reg1
-    assign sel_alu_src1[0] = inst_ori | inst_addiu | inst_subu;
+    assign sel_alu_src1[0] = inst_ori | inst_addiu | inst_subu | inst_sw|inst_addu |inst_or;
 
     // pc to reg1
     assign sel_alu_src1[1] = inst_jal;
 
     // sa_zero_extend to reg1
-    assign sel_alu_src1[2] = 1'b0;
+    assign sel_alu_src1[2] = inst_sll;
 
     
     // rt to reg2
-    assign sel_alu_src2[0] = inst_subu;
+    assign sel_alu_src2[0] = inst_subu |inst_addu |inst_sll |inst_or;
     
     // imm_sign_extend to reg2
-    assign sel_alu_src2[1] = inst_lui | inst_addiu;
+    assign sel_alu_src2[1] = inst_lui | inst_addiu |inst_sw;
 
     // 32'b8 to reg2
     assign sel_alu_src2[2] = inst_jal;
@@ -213,15 +217,15 @@ module ID(
 
 
 
-    assign op_add = inst_addiu | inst_jal;
+    assign op_add = inst_addiu | inst_jal |inst_sw |inst_addu;
     assign op_sub = inst_subu;
     assign op_slt = 1'b0;
     assign op_sltu = 1'b0;
     assign op_and = 1'b0;
     assign op_nor = 1'b0;
-    assign op_or = inst_ori;
+    assign op_or = inst_ori |inst_or;
     assign op_xor = 1'b0;
-    assign op_sll = 1'b0;
+    assign op_sll = inst_sll;
     assign op_srl = 1'b0;
     assign op_sra = 1'b0;
     assign op_lui = inst_lui;
@@ -233,7 +237,7 @@ module ID(
     assign mem_op={inst_sw};
 
     // load and store enable
-    assign data_ram_en = 1'b0;
+    assign data_ram_en = inst_sw;
 
     // write enable
     assign data_ram_wen = inst_sw;
@@ -241,12 +245,12 @@ module ID(
 
 
     // regfile store enable
-    assign rf_we = inst_ori | inst_lui | inst_addiu | inst_subu | inst_jal;
+    assign rf_we = inst_ori | inst_lui | inst_addiu | inst_subu | inst_jal |inst_addu |inst_sll |inst_or;
 
 
 
     // store in [rd]
-    assign sel_rf_dst[0] = inst_subu;
+    assign sel_rf_dst[0] = inst_subu |inst_addu |inst_sll |inst_or;
     // store in [rt] 
     assign sel_rf_dst[1] = inst_ori | inst_lui | inst_addiu;
     // store in [31]
