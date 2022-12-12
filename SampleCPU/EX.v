@@ -89,7 +89,7 @@ module EX(
 
     wire inst_sw;
 
-    assign{inst_sw}=mem_op;
+    assign{inst_sw,inst_lw}=mem_op;
 
     wire [3:0] byte_sel;
 
