@@ -7,6 +7,8 @@ module EX(
 
     input wire [`ID_TO_EX_WD-1:0] id_to_ex_bus,
 
+    output wire stallreq_for_ex,
+
     output wire [`EX_TO_MEM_WD-1:0] ex_to_mem_bus,
 
     output wire [`EX_TO_RF_WD-1:0] ex_to_rf_bus,
@@ -87,7 +89,7 @@ module EX(
     assign ex_result = alu_result;
 
 
-    wire inst_sw;
+    wire inst_sw,inst_lw;
 
     assign{inst_sw,inst_lw}=mem_op;
 
