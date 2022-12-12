@@ -90,12 +90,20 @@ module EX(
     wire inst_sw;
 
     assign{inst_sw}=mem_op;
-    assign data_ram_sel=4'b1111;
-    assign data_ram_wen={4{data_ram_wen}}&data_ram_sel;
-    assign data_ram_addr=ex_result;
-    assign data_sram_wdata=rf_rdata2;
+
+    wire [3:0] byte_sel;
+
+    assign data_ram_sel =4'b1111;
+
+    assign data_sram_en     = data_ram_en;
+    assign data_sram_wen    = {4{data_ram_wen}}&data_ram_sel;
+    assign data_sram_addr   = ex_result; 
+    assign data_sram_wdata  = rf_rdata2;
+
 
     assign ex_to_mem_bus = {
+        mem_op,         // 79
+        data_ram_sel,   // 78:76
         ex_pc,          // 75:44
         data_ram_en,    // 43
         data_ram_wen,   // 42:39
