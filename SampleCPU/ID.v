@@ -255,11 +255,14 @@ module ID(
 
     assign mem_op={inst_sw,inst_lw};
 
+    // 0 from alu_res ; 1 from ld_res
+    assign sel_rf_res = inst_lw; 
+
     // load and store enable
     assign data_ram_en = inst_sw |inst_lw;
 
     // write enable
-    assign data_ram_wen = inst_sw;
+    assign data_ram_wen = inst_sw?4'b1111:4'b0000;
 
     assign stallreq_for_load=inst_lw;
 
@@ -280,8 +283,7 @@ module ID(
                     | {5{sel_rf_dst[1]}} & rt
                     | {5{sel_rf_dst[2]}} & 32'd31;
 
-    // 0 from alu_res ; 1 from ld_res
-    assign sel_rf_res = inst_lw; 
+
 
     assign id_to_ex_bus = {
         mem_op,         // 159
