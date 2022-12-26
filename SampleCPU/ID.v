@@ -169,14 +169,14 @@ module ID(
                   (mem_rf_we & (mem_rf_waddr == rt))?mem_rf_wdata:
                   (wb_rf_we & (wb_rf_waddr == rt))?wb_rf_wdata:
                                                     rf_rdata2;
-    assign hi=wb_hi_we ? wb_hi_i 
-            : ex_hi_we ? ex_hi_i
-            : mem_hi_we? mem_hi_i
-            : wb_hi_i;
-    assign lo=wb_lo_we ? wb_lo_i 
-            : ex_lo_we ? ex_lo_i
-            : mem_lo_we? mem_lo_i
-            : wb_lo_i;
+    assign hi=ex_hi_we  ? ex_hi_i 
+            : mem_hi_we ? mem_hi_i
+            : wb_hi_we  ? wb_hi_i
+            : hi_o;
+    assign lo=ex_lo_we  ? ex_lo_i
+            : mem_lo_we ? mem_lo_i 
+            : wb_lo_we  ? wb_lo_i
+            : lo_o;
 
     assign opcode = inst[31:26];
     assign rs = inst[25:21];
