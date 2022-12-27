@@ -96,17 +96,28 @@ module EX(
 
 
     wire inst_sw,inst_lw;
+    wire inst_lb,inst_lbu,inst_lh,inst_lhu,inst_sb,inst_sh;
 
-    assign{inst_sw,inst_lw}=mem_op;
+
+    assign{inst_sw,inst_lw,inst_lb,inst_lbu,inst_lh,inst_lhu,inst_sb,inst_sh}=mem_op;
 
     wire [3:0] byte_sel;
+    decoder_2_4 u_decoder_2_4(
+    .in  (ex_result[1:0]),
+    .out (byte_sel      )
+    );
 
-    assign data_ram_sel =4'b1111;
+
+    assign data_ram_sel =inst_sb | inst_lb | inst_lbu ? byte_sel :
+                         inst_sh | inst_lh | inst_lhu ? {{2{byte_sel[2]}},{2{byte_sel[0]}}} :
+                         inst_sw | inst_lw            ? 4'b1111 : 4'b0000;
 
     assign data_sram_en     = data_ram_en;
     assign data_sram_wen    = {4{data_ram_wen}}&data_ram_sel;
     assign data_sram_addr   = ex_result; 
-    assign data_sram_wdata  = rf_rdata2;
+    assign data_sram_wdata  = inst_sb ? {4{rf_rdata2[7:0]}}  :
+                              inst_sh ? {2{rf_rdata2[15:0]}} : 
+                              rf_rdata2;
 
 
     wire inst_mflo,inst_mfhi,inst_mthi,inst_mtlo;
@@ -229,8 +240,8 @@ module EX(
                 op_div    ? div_result[63:32] : 32'b0;
 
     assign lo_o=inst_mtlo ? rf_rdata1         :
-                op_mul    ? mul_result[31:0] :
-                op_div    ? div_result[31:0] : 32'b0;
+                op_mul    ? mul_result[31:0]  :
+                op_div    ? div_result[31:0]  : 32'b0;
 
     assign ex_result = inst_mflo?lo_i
                      : inst_mfhi?hi_i

@@ -42,6 +42,8 @@ module MEM(
     wire [7:0]mem_op;
     wire hi_we,lo_we;
     wire [31:0] hi_o,lo_o;
+    wire inst_sw,inst_lw;
+    wire inst_lb,inst_lbu,inst_lh,inst_lhu,inst_sb,inst_sh;
 
 
     assign {
@@ -59,8 +61,28 @@ module MEM(
         rf_waddr,       // 36:32
         ex_result       // 31:0
     } =  ex_to_mem_bus_r;
+    
+    assign{inst_sw,inst_lw,inst_lb,inst_lbu,inst_lh,inst_lhu,inst_sb,inst_sh}=mem_op;
 
-    assign mem_result = data_sram_rdata; 
+    wire [7:0]  b_data;
+    wire [15:0] h_data;
+    wire [31:0] w_data;
+
+    assign b_data = data_ram_sel[3] ? data_sram_rdata[31:24] : 
+                    data_ram_sel[2] ? data_sram_rdata[23:16] :
+                    data_ram_sel[1] ? data_sram_rdata[15: 8] : 
+                    data_ram_sel[0] ? data_sram_rdata[ 7: 0] : 8'b0;
+
+    assign h_data = data_ram_sel[2] ? data_sram_rdata[31:16] :
+                    data_ram_sel[0] ? data_sram_rdata[15: 0] : 16'b0;
+                    
+    assign w_data = data_sram_rdata;
+
+    assign mem_result = inst_lb     ? {{24{b_data[7]}},b_data} :
+                        inst_lbu    ? {{24{1'b0}},b_data} :
+                        inst_lh     ? {{16{h_data[15]}},h_data} :
+                        inst_lhu    ? {{16{1'b0}},h_data} :
+                        inst_lw     ? w_data : 32'b0; 
 
     assign rf_wdata = sel_rf_res & data_ram_en? mem_result : ex_result;
 
